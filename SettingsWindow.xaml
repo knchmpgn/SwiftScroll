@@ -1,0 +1,941 @@
+<ui:FluentWindow x:Class="SwiftScroll.SettingsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="SwiftScroll" Height="780" Width="1020"
+    WindowStartupLocation="CenterScreen"
+    WindowBackdropType="Mica"
+    ExtendsContentIntoTitleBar="True"
+    ResizeMode="CanResize">
+    <ui:FluentWindow.Resources>
+        <!-- Dark theme colors (will be updated by code) -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#0F1115"/>
+        <SolidColorBrush x:Key="SurfaceBrush" Color="#16191F"/>
+        <SolidColorBrush x:Key="SurfaceBorderBrush" Color="#202533"/>
+        <SolidColorBrush x:Key="TextBrush" Color="#F5F6FA"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#B6BCC8"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#5CC8FF"/>
+        <SolidColorBrush x:Key="InputBrush" Color="#141820"/>
+        <SolidColorBrush x:Key="InputBorderBrush" Color="#262B38"/>
+        <SolidColorBrush x:Key="TabHoverBrush" Color="#1F232B"/>
+        <SolidColorBrush x:Key="TickMarkBrush" Color="#505050"/>
+        <SolidColorBrush x:Key="ScrollBarTrackBrush" Color="#1A1E26"/>
+        <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="#3A4252"/>
+        <SolidColorBrush x:Key="ScrollBarThumbHoverBrush" Color="#4A5466"/>
+        <SolidColorBrush x:Key="ScrollBarThumbDragBrush" Color="#5F6A7E"/>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource InputBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="3,3"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="MinWidth" Value="80"/>
+            <Setter Property="MaxWidth" Value="100"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <!-- Windows 11 Rounded Corners -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource BackgroundBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="MinWidth" Value="80"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E8E8E8"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#D0D0D0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Icon Button Style (for reset buttons) -->
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource InputBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ResetButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ResetButtonBorder" Property="Background" Value="{DynamicResource TabHoverBrush}"/>
+                                <Setter TargetName="ResetButtonBorder" Property="BorderBrush" Value="{DynamicResource InputBorderBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ResetButtonBorder" Property="Background" Value="{DynamicResource SurfaceBorderBrush}"/>
+                                <Setter TargetName="ResetButtonBorder" Property="BorderBrush" Value="{DynamicResource SurfaceBorderBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="ResetButtonBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ResetButtonBorder" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="MinWidth" Value="80"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource TabHoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Preset Button Style -->
+        <Style x:Key="PresetButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SurfaceBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource TabHoverBrush}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ListBox">
+            <Setter Property="Background" Value="{DynamicResource InputBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd" Background="Transparent" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource TabHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceBorderBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Scrollbar/Slider styles - must be defined before Slider style -->
+        <Style x:Key="ScrollBarThumb" TargetType="Thumb">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="MinWidth" Value="8"/>
+            <Setter Property="MinHeight" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border x:Name="ThumbBody"
+                                Margin="2"
+                                CornerRadius="4"
+                                Background="{DynamicResource ScrollBarThumbBrush}"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ThumbBody" Property="Background" Value="{DynamicResource ScrollBarThumbHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsDragging" Value="True">
+                                <Setter TargetName="ThumbBody" Property="Background" Value="{DynamicResource ScrollBarThumbDragBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ThumbBody" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ScrollBarRepeatButton" TargetType="RepeatButton">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Rectangle Fill="Transparent"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ScrollBarLineButton" TargetType="RepeatButton">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Rectangle Fill="Transparent"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Slider track fill (left of thumb) -->
+        <Style x:Key="SliderDecreaseRepeatButtonStyle" TargetType="RepeatButton">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border Background="{DynamicResource AccentBrush}" Height="4" CornerRadius="2" VerticalAlignment="Center"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SliderIncreaseRepeatButtonStyle" TargetType="RepeatButton">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Rectangle Fill="Transparent"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Slider thumb -->
+        <Style x:Key="SliderThumbStyle" TargetType="Thumb">
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Height" Value="14"/>
+            <Setter Property="Width" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Ellipse x:Name="ThumbEllipse"
+                                 Fill="{DynamicResource AccentBrush}"
+                                 Stroke="{DynamicResource SurfaceBorderBrush}"
+                                 StrokeThickness="1"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ThumbEllipse" Property="StrokeThickness" Value="1.5"/>
+                            </Trigger>
+                            <Trigger Property="IsDragging" Value="True">
+                                <Setter TargetName="ThumbEllipse" Property="Width" Value="16"/>
+                                <Setter TargetName="ThumbEllipse" Property="Height" Value="16"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ThumbEllipse" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Slider style - Win11-like -->
+        <Style TargetType="Slider">
+            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="MinWidth" Value="180"/>
+            <Setter Property="MaxWidth" Value="320"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="TickPlacement" Value="BottomRight"/>
+            <Setter Property="IsSnapToTickEnabled" Value="False"/>
+            <Setter Property="AutoToolTipPlacement" Value="TopLeft"/>
+            <Setter Property="AutoToolTipPrecision" Value="0"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid VerticalAlignment="Center" Margin="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="22"/>
+                                <RowDefinition Height="8"/>
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0"
+                                    Height="4"
+                                    Background="{DynamicResource InputBorderBrush}"
+                                    CornerRadius="2"
+                                    VerticalAlignment="Center"
+                                    Margin="7,0"/>
+
+                            <Track Grid.Row="0"
+                                   x:Name="PART_Track"
+                                   VerticalAlignment="Center"
+                                   Margin="7,0">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge" 
+                                                  Style="{StaticResource SliderDecreaseRepeatButtonStyle}"/>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge" 
+                                                  Style="{StaticResource SliderIncreaseRepeatButtonStyle}"/>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource SliderThumbStyle}"/>
+                                </Track.Thumb>
+                            </Track>
+
+                            <TickBar x:Name="BottomTickBar"
+                                     Grid.Row="1"
+                                     Height="6"
+                                     Margin="7,0,7,0"
+                                     Fill="{DynamicResource TickMarkBrush}"
+                                     Placement="Bottom"
+                                     SnapsToDevicePixels="True"
+                                     Minimum="{TemplateBinding Minimum}"
+                                     Maximum="{TemplateBinding Maximum}"
+                                     Ticks="{TemplateBinding Ticks}"
+                                     TickFrequency="{TemplateBinding TickFrequency}"
+                                     IsDirectionReversed="{TemplateBinding IsDirectionReversed}"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="TickPlacement" Value="None">
+                                <Setter TargetName="BottomTickBar" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="BottomTickBar" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ScrollBar">
+            <Setter Property="Stylus.IsPressAndHoldEnabled" Value="False"/>
+            <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
+            <Setter Property="Width" Value="12"/>
+            <Setter Property="MinWidth" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid SnapsToDevicePixels="True" Background="Transparent">
+                            <Border Grid.Row="0"
+                                    Margin="2,2"
+                                    CornerRadius="5"
+                                    Background="{DynamicResource ScrollBarTrackBrush}"/>
+
+                            <Track x:Name="PART_Track"
+                                   Grid.Row="0"
+                                   IsDirectionReversed="True"
+                                   Margin="2,2">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource ScrollBarRepeatButton}" Command="ScrollBar.PageUpCommand"/>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Style="{StaticResource ScrollBarRepeatButton}" Command="ScrollBar.PageDownCommand"/>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource ScrollBarThumb}"/>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="Width" Value="Auto"/>
+                    <Setter Property="MinWidth" Value="0"/>
+                    <Setter Property="Height" Value="12"/>
+                    <Setter Property="MinHeight" Value="12"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ScrollBar">
+                                <Grid SnapsToDevicePixels="True" Background="Transparent">
+                                    <Border Grid.Column="0"
+                                            Margin="2,2"
+                                            CornerRadius="5"
+                                            Background="{DynamicResource ScrollBarTrackBrush}"/>
+
+                                    <Track x:Name="PART_Track"
+                                           Grid.Column="0"
+                                           IsDirectionReversed="False"
+                                           Margin="2,2">
+                                        <Track.DecreaseRepeatButton>
+                                            <RepeatButton Style="{StaticResource ScrollBarRepeatButton}" Command="ScrollBar.PageLeftCommand"/>
+                                        </Track.DecreaseRepeatButton>
+                                        <Track.IncreaseRepeatButton>
+                                            <RepeatButton Style="{StaticResource ScrollBarRepeatButton}" Command="ScrollBar.PageRightCommand"/>
+                                        </Track.IncreaseRepeatButton>
+                                        <Track.Thumb>
+                                            <Thumb Style="{StaticResource ScrollBarThumb}"/>
+                                        </Track.Thumb>
+                                    </Track>
+                                </Grid>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" Value="0.5"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Tab Control -->
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid KeyboardNavigation.TabNavigation="Local"
+                              SnapsToDevicePixels="True"
+                              ClipToBounds="True">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <TabPanel x:Name="HeaderPanel"
+                                      Grid.Row="0"
+                                      Margin="0"
+                                      Panel.ZIndex="1"
+                                      IsItemsHost="True"/>
+
+                            <Border Grid.Row="1"
+                                    Background="{TemplateBinding Background}"
+                                    BorderThickness="0"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter x:Name="PART_SelectedContentHost"
+                                                  Margin="0"
+                                                  ContentSource="SelectedContent"
+                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TabItem">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="MinWidth" Value="100"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="Bd" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="0,0,0,2" Background="Transparent" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter x:Name="ContentSite" SnapsToDevicePixels="True" ContentSource="Header" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource TabHoverBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="BorderThickness" Value="0,0,0,3"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </ui:FluentWindow.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0"
+                     Title="Swift Scroll"
+                     Icon="Assets/app.ico"
+                     ShowMaximize="True"
+                     ShowMinimize="True"
+                     ShowClose="True"
+                     Padding="12,8"/>
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <ui:Card Grid.Row="0" Margin="16,12,16,8" Padding="18">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Swift Scroll" FontSize="22" FontWeight="SemiBold"/>
+                        <TextBlock Text="Smooth, configurable scrolling with a Windows 11 feel powered by WPF UI." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" VerticalAlignment="Center">
+                        <Button Content="Reset All" Style="{StaticResource SecondaryButton}" Click="OnResetDefaults" Padding="16,8" MinWidth="96"/>
+                    </StackPanel>
+                </Grid>
+            </ui:Card>
+
+            <!-- Content with Tabs -->
+            <TabControl Grid.Row="1" Margin="16,0,16,16">
+            <!-- General Tab -->
+            <TabItem Header="General">
+                <ScrollViewer Padding="24">
+                    <StackPanel>
+                        <TextBlock Text="Global Settings" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+
+                        <Border Padding="20" Background="{DynamicResource SurfaceBrush}" CornerRadius="8" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="1" Margin="0,0,0,16">
+                            <StackPanel>
+                                <CheckBox Content="Enable smooth scrolling" IsChecked="{Binding Enabled}" Margin="0,0,0,12"/>
+                                <TextBlock Text="When disabled, scrolling will use default Windows behavior." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Padding="20" Background="{DynamicResource SurfaceBrush}" CornerRadius="8" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="1" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Interaction" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                <CheckBox Content="Shift key for horizontal scroll" IsChecked="{Binding ShiftKeyHorizontal}"/>
+                                <TextBlock Text="Hold Shift while scrolling to scroll horizontally." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="24,4,0,12" TextWrapping="Wrap"/>
+                                <CheckBox Content="Start with Windows" IsChecked="{Binding StartWithWindows}"/>
+                                <TextBlock Text="Swift Scroll will automatically launch when you sign in." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="24,4,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Performance Tab -->
+            <TabItem Header="Performance">
+                <ScrollViewer Padding="24">
+                    <StackPanel>
+                        <TextBlock Text="Scroll Parameters" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                        <TextBlock Text="Adjust these parameters to customize the scrolling behavior." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,16" TextWrapping="Wrap"/>
+
+                        <!-- Presets Section -->
+                        <Border Padding="20" Background="{DynamicResource SurfaceBrush}" CornerRadius="8" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="1" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Quick Presets" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                <TextBlock Text="Try these pre-configured settings to find your ideal scrolling experience." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,12" TextWrapping="Wrap"/>
+                                
+                                <WrapPanel Margin="0,4,0,0">
+                                    <Button Style="{StaticResource PresetButton}" Click="OnPresetClick" Tag="macOS">
+                                        <StackPanel>
+                                            <TextBlock Text="&#x2318; macOS Style" FontWeight="SemiBold" FontSize="12"/>
+                                            <TextBlock Text="Smooth &amp; elegant" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Style="{StaticResource PresetButton}" Click="OnPresetClick" Tag="Windows">
+                                        <StackPanel>
+                                            <TextBlock Text="&#x229E; Windows Classic" FontWeight="SemiBold" FontSize="12"/>
+                                            <TextBlock Text="Familiar &amp; responsive" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Style="{StaticResource PresetButton}" Click="OnPresetClick" Tag="Precision">
+                                        <StackPanel>
+                                            <TextBlock Text="&#x25CE; Precision" FontWeight="SemiBold" FontSize="12"/>
+                                            <TextBlock Text="Fine control" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Style="{StaticResource PresetButton}" Click="OnPresetClick" Tag="Cinematic">
+                                        <StackPanel>
+                                            <TextBlock Text="&#x1F39E; Cinematic" FontWeight="SemiBold" FontSize="12"/>
+                                            <TextBlock Text="Ultra smooth" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Style="{StaticResource PresetButton}" Click="OnPresetClick" Tag="Snappy">
+                                        <StackPanel>
+                                            <TextBlock Text="&#x26A1; Snappy" FontWeight="SemiBold" FontSize="12"/>
+                                            <TextBlock Text="Quick &amp; direct" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        </StackPanel>
+                                    </Button>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Parameters Section -->
+                        <Border Padding="20" Background="{DynamicResource SurfaceBrush}" CornerRadius="8" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <!-- Step Size -->
+                                <Grid Margin="0,0,0,16">
+                                    <StackPanel>
+                                        <TextBlock Text="Step Size (px)" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Text="{Binding StepSizePx, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="NumericOnly" DataObject.Pasting="OnPasteNumeric" Width="80" Grid.Column="0" Margin="0,0,8,0"/>
+                                            <Button Grid.Column="1" Style="{StaticResource IconButton}" Click="OnResetParameter" Tag="StepSizePx" ToolTip="Reset to default (12)" VerticalAlignment="Center" Margin="0,0,16,0">
+                                                <TextBlock Text="&#xE72C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center"/>
+                                            </Button>
+                                            <Slider x:Name="StepSizeSlider"
+                                                    Value="{Binding StepSizePx, Mode=TwoWay}"
+                                                    Minimum="1"
+                                                    Maximum="25"
+                                                    Grid.Column="2"
+                                                    TickFrequency="5"
+                                                    IsSnapToTickEnabled="True"
+                                                    ValueChanged="OnSliderValueChanged"/>
+                                        </Grid>
+                                        <TextBlock Text="Distance scrolled per wheel notch." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Animation Time -->
+                                <Grid Margin="0,0,0,16">
+                                    <StackPanel>
+                                        <TextBlock Text="Animation Time (ms)" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Text="{Binding AnimationTimeMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="NumericOnly" DataObject.Pasting="OnPasteNumeric" Width="80" Grid.Column="0" Margin="0,0,8,0"/>
+                                            <Button Grid.Column="1" Style="{StaticResource IconButton}" Click="OnResetParameter" Tag="AnimationTimeMs" ToolTip="Reset to default (250)" VerticalAlignment="Center" Margin="0,0,16,0">
+                                                <TextBlock Text="&#xE72C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center"/>
+                                            </Button>
+                                            <Slider x:Name="AnimTimeSlider"
+                                                    Value="{Binding AnimationTimeMs, Mode=TwoWay}"
+                                                    Minimum="100"
+                                                    Maximum="1000"
+                                                    Grid.Column="2"
+                                                    TickFrequency="100"
+                                                    IsSnapToTickEnabled="True"
+                                                    ValueChanged="OnSliderValueChanged"/>
+                                        </Grid>
+                                        <TextBlock Text="Duration of the scrolling animation." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Acceleration Window -->
+                                <Grid Margin="0,0,0,16">
+                                    <StackPanel>
+                                        <TextBlock Text="Acceleration Window (ms)" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Text="{Binding AccelerationDeltaMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="NumericOnly" DataObject.Pasting="OnPasteNumeric" Width="80" Grid.Column="0" Margin="0,0,8,0"/>
+                                            <Button Grid.Column="1" Style="{StaticResource IconButton}" Click="OnResetParameter" Tag="AccelerationDeltaMs" ToolTip="Reset to default (60)" VerticalAlignment="Center" Margin="0,0,16,0">
+                                                <TextBlock Text="&#xE72C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center"/>
+                                            </Button>
+                                            <Slider x:Name="AccelDeltaSlider"
+                                                    Value="{Binding AccelerationDeltaMs, Mode=TwoWay}"
+                                                    Minimum="50"
+                                                    Maximum="300"
+                                                    Grid.Column="2"
+                                                    TickFrequency="50"
+                                                    IsSnapToTickEnabled="True"
+                                                    ValueChanged="OnSliderValueChanged"/>
+                                        </Grid>
+                                        <TextBlock Text="Time window for detecting rapid scrolling." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Max Acceleration -->
+                                <Grid Margin="0,0,0,16">
+                                    <StackPanel>
+                                        <TextBlock Text="Max Acceleration (x)" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Text="{Binding AccelerationMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="NumericOnly" DataObject.Pasting="OnPasteNumeric" Width="80" Grid.Column="0" Margin="0,0,8,0"/>
+                                            <Button Grid.Column="1" Style="{StaticResource IconButton}" Click="OnResetParameter" Tag="AccelerationMax" ToolTip="Reset to default (6)" VerticalAlignment="Center" Margin="0,0,16,0">
+                                                <TextBlock Text="&#xE72C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center"/>
+                                            </Button>
+                                            <Slider x:Name="AccelMaxSlider"
+                                                    Value="{Binding AccelerationMax, Mode=TwoWay}"
+                                                    Minimum="1"
+                                                    Maximum="15"
+                                                    Grid.Column="2"
+                                                    TickFrequency="1"
+                                                    IsSnapToTickEnabled="True"
+                                                    ValueChanged="OnSliderValueChanged"/>
+                                        </Grid>
+                                        <TextBlock Text="Maximum speed multiplier when scrolling rapidly." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Easing Power -->
+                                <Grid Margin="0,0,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Easing Power (x)" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Text="{Binding TailToHeadRatio, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PreviewTextInput="NumericOnly" DataObject.Pasting="OnPasteNumeric" Width="80" Grid.Column="0" Margin="0,0,8,0"/>
+                                            <Button Grid.Column="1" Style="{StaticResource IconButton}" Click="OnResetParameter" Tag="TailToHeadRatio" ToolTip="Reset to default (2)" VerticalAlignment="Center" Margin="0,0,16,0">
+                                                <TextBlock Text="&#xE72C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="13" VerticalAlignment="Center"/>
+                                            </Button>
+                                            <Slider x:Name="TailHeadSlider"
+                                                    Value="{Binding TailToHeadRatio, Mode=TwoWay}"
+                                                    Minimum="1"
+                                                    Maximum="10"
+                                                    Grid.Column="2"
+                                                    TickFrequency="1"
+                                                    IsSnapToTickEnabled="True"
+                                                    ValueChanged="OnSliderValueChanged"/>
+                                        </Grid>
+                                        <TextBlock Text="Controls the easing curve smoothness." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Padding="20" Background="{DynamicResource SurfaceBrush}" CornerRadius="8" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="1" Margin="0,16,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Animation" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                <CheckBox Content="Enable animation easing" IsChecked="{Binding AnimationEasing}"/>
+                                <TextBlock Text="Applies an easing curve to make scrolling feel smoother." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="24,4,0,12" TextWrapping="Wrap"/>
+                                <CheckBox Content="Smooth horizontal scrolling" IsChecked="{Binding HorizontalSmoothness}"/>
+                                <TextBlock Text="Apply smooth scrolling to horizontal scroll events." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="24,4,0,12" TextWrapping="Wrap"/>
+                                <CheckBox Content="Reverse scroll direction" IsChecked="{Binding ReverseWheelDirection}"/>
+                                <TextBlock Text="Inverts the scroll direction (natural scrolling)." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="24,4,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Exclusions Tab -->
+            <TabItem Header="Exclusions">
+                <ScrollViewer Padding="24">
+                    <StackPanel>
+                        <TextBlock Text="Excluded Applications" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                        <TextBlock Text="Smooth scrolling will be completely disabled for applications in this list." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,12" TextWrapping="Wrap"/>
+
+                        <Border Padding="20" Background="{DynamicResource SurfaceBrush}" CornerRadius="8" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <ListBox x:Name="ExcludedAppsList" ItemsSource="{Binding ExcludedApps}" MinHeight="150"/>
+
+                                <StackPanel Grid.Column="1" Grid.Row="0" VerticalAlignment="Top" Margin="12,0,0,0">
+                                    <Button Content="Add" Click="OnAddApp" Style="{StaticResource SecondaryButton}" Margin="0,0,0,8" Width="80"/>
+                                    <Button Content="Remove" Click="OnRemoveApp" Style="{StaticResource SecondaryButton}" Width="80"/>
+                                </StackPanel>
+
+                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="Hint: Focus on an application before opening Settings, then click 'Add' to exclude it." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,12,0,0" TextWrapping="Wrap"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Profiles Tab -->
+            <TabItem Header="Profiles">
+                <ScrollViewer Padding="24">
+                    <StackPanel>
+                        <TextBlock Text="Scroll Profiles" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                        <TextBlock Text="Create and manage custom scroll profiles. Each profile stores specific scroll parameters that you can switch between." FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,16" TextWrapping="Wrap"/>
+
+                        <!-- Profile Management Section -->
+                        <Border Padding="20" Background="{DynamicResource SurfaceBrush}" CornerRadius="8" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="1" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Available Profiles" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12"/>
+
+                                <!-- Profiles List -->
+                                <ListBox x:Name="ProfilesList" ItemsSource="{Binding Profiles}" MinHeight="120" Margin="0,0,0,12">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}" Padding="4"/>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+
+                                <!-- Profile Actions -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                    <TextBox x:Name="NewProfileNameBox" Width="150" Margin="0,0,8,0" ToolTip="Enter profile name"/>
+                                    <Button Content="Create Profile" Click="OnCreateProfile" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
+                                    <Button Content="Delete Selected" Click="OnDeleteProfile" Style="{StaticResource SecondaryButton}"/>
+                                </StackPanel>
+
+                                <TextBlock Text="Note: 'Default' profile cannot be deleted." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Application Assignments Section -->
+                        <Border Padding="20" Background="{DynamicResource SurfaceBrush}" CornerRadius="8" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="1" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Application Assignments" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                <TextBlock Text="Assign profiles to specific applications. When you switch to that app, its assigned profile will be used." FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,12" TextWrapping="Wrap"/>
+
+                                <!-- App Profile Assignments -->
+                                <ListBox ItemsSource="{Binding AppProfiles}" MinHeight="150" Margin="0,0,0,12">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="{Binding AppName}" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding ProfileName}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+                                                </StackPanel>
+                                                <Button Grid.Column="1" Content="Remove" Click="OnRemoveAppProfile" Style="{StaticResource SecondaryButton}" Tag="{Binding AppName}" Padding="8,4"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+
+                                <!-- Add Assignment -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
+                                    <TextBox x:Name="AppNameBox" Width="150" Height="32" Margin="0,0,8,0" ToolTip="Application name or exe name" VerticalContentAlignment="Center"/>
+                                    <ComboBox x:Name="ProfileCombo" ItemsSource="{Binding Profiles}" Width="150" Height="32" Margin="0,0,8,0" SelectedValuePath="Name" DisplayMemberPath="Name" />
+                                    <Button Content="Assign Profile" Click="OnAssignProfile" Style="{StaticResource SecondaryButton}" Height="32" Padding="12,4"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Info Section -->
+                        <Border Padding="20" Background="{DynamicResource SurfaceBrush}" CornerRadius="8" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="How Profiles Work" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4" TextWrapping="Wrap">
+                                    <Run Text="- Each profile stores all scroll parameters (step size, animation time, acceleration, etc.)"/>
+                                </TextBlock>
+                                <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4" TextWrapping="Wrap">
+                                    <Run Text="- Use the Performance tab to adjust settings for the current profile"/>
+                                </TextBlock>
+                                <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4" TextWrapping="Wrap">
+                                    <Run Text="- Assign profiles to applications for automatic switching"/>
+                                </TextBlock>
+                                <TextBlock FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,4" TextWrapping="Wrap">
+                                    <Run Text="- Excluded applications cannot have profiles assigned"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+
+    <!-- Footer -->
+    <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" Padding="16" BorderBrush="{DynamicResource SurfaceBorderBrush}" BorderThickness="0,1,0,0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Save" IsDefault="True" Click="OnSave" Margin="0,0,8,0"/>
+            <Button Content="Close" Style="{StaticResource SecondaryButton}" Click="OnCloseClicked" Margin="0"/>
+        </StackPanel>
+    </Border>
+</Grid>
+</ui:FluentWindow>
+
+

@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+
+    <!-- Branding -->
+    <AssemblyName>SwiftScroll</AssemblyName>
+    <RootNamespace>SwiftScroll</RootNamespace>
+    <Product>Swift Scroll</Product>
+    <Company>Swift Scroll</Company>
+    <Description>Swift Scroll brings smooth, configurable scrolling to Windows.</Description>
+    <Version>0.2.0</Version>
+
+    <!-- App executable icon -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove=".github\**" />
+    <EmbeddedResource Remove=".github\**" />
+    <None Remove=".github\**" />
+    <Page Remove=".github\**" />
+    <None Remove="Assets\app.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Copy icon so runtime/tray can always pick up latest built asset -->
+    <Content Include="Assets\app.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <PackageReference Include="WPF-UI" Version="4.2.0" />
+    <Resource Include="Assets\logo.svg" />
+  </ItemGroup>
+
+  <!-- Kill any running instance before build to avoid file lock -->
+  <Target Name="KillRunningInstance" BeforeTargets="BeforeBuild">
+    <Exec Command="taskkill /F /IM $(AssemblyName).exe /T 2&gt;nul" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+</Project>
+
